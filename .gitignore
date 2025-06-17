@@ -1,0 +1,27 @@
+# Large Assets
+assets/podcasts/parserator-series/*.wav
+assets/tiles-patterns/
+node_modules/
+venv/
+
+# Environment files
+.env
+.env.local
+
+# Build outputs
+dist/
+build/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Logs
+*.log
+dev-server.log
