@@ -1,0 +1,806 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VIB3CODE Enhanced - Full 4D Demo</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔮</text></svg>">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            background: #000;
+            color: #ffffff;
+            font-family: 'Orbitron', 'Courier New', monospace;
+            overflow: hidden;
+            height: 100vh;
+        }
+        
+        #visualization-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+        
+        .hero-overlay {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            z-index: 10;
+            pointer-events: none;
+        }
+        
+        .hero-title {
+            font-size: 4rem;
+            font-weight: 900;
+            background: linear-gradient(45deg, #00ff88, #00ccff, #ff00aa);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 20px;
+            text-shadow: 0 0 30px rgba(0, 255, 136, 0.5);
+            animation: pulse 2s ease-in-out infinite alternate;
+        }
+        
+        .hero-subtitle {
+            font-size: 1.2rem;
+            color: #88ffcc;
+            margin-bottom: 40px;
+            opacity: 0.9;
+        }
+        
+        @keyframes pulse {
+            from { opacity: 0.8; }
+            to { opacity: 1; }
+        }
+        
+        .floating-panel {
+            position: fixed;
+            background: rgba(0, 20, 40, 0.85);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(0, 255, 136, 0.3);
+            border-radius: 12px;
+            padding: 15px;
+            color: #ffffff;
+            font-size: 11px;
+            box-shadow: 0 8px 32px rgba(0, 255, 136, 0.2);
+            z-index: 1000;
+            transition: all 0.3s ease;
+            pointer-events: auto;
+        }
+        
+        .floating-panel:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 40px rgba(0, 255, 136, 0.3);
+        }
+        
+        .ppp-styles { top: 20px; right: 20px; width: 200px; }
+        .performance { bottom: 20px; left: 20px; width: 180px; }
+        .community { top: 50%; right: 20px; width: 220px; transform: translateY(-50%); }
+        .developer { bottom: 20px; right: 300px; width: 200px; }
+        .audio { bottom: 20px; left: 220px; width: 190px; }
+        
+        .panel-title {
+            color: #00ff88;
+            font-weight: bold;
+            margin-bottom: 10px;
+            border-bottom: 1px solid rgba(0, 255, 136, 0.3);
+            padding-bottom: 5px;
+        }
+        
+        .style-button, .demo-button {
+            width: 100%;
+            padding: 8px;
+            margin: 3px 0;
+            background: rgba(0, 255, 136, 0.1);
+            border: 1px solid #00ff88;
+            border-radius: 6px;
+            color: #00ff88;
+            font-family: inherit;
+            font-size: 9px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .style-button:hover, .demo-button:hover {
+            background: rgba(0, 255, 136, 0.2);
+            transform: scale(1.02);
+        }
+        
+        .style-button.active {
+            background: rgba(0, 255, 136, 0.3);
+            border-color: #00ff88;
+            box-shadow: 0 0 10px rgba(0, 255, 136, 0.5);
+        }
+        
+        .metric-row {
+            display: flex;
+            justify-content: space-between;
+            margin: 3px 0;
+            padding: 2px 0;
+        }
+        
+        .metric-value {
+            color: #00ccff;
+            font-weight: bold;
+        }
+        
+        .status-indicator {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+        
+        .status-active { background: #00ff88; }
+        .status-warning { background: #ffaa00; }
+        .status-info { background: #00ccff; }
+        
+        .start-button {
+            padding: 15px 30px;
+            background: linear-gradient(45deg, #00ff88, #00ccff);
+            border: none;
+            border-radius: 8px;
+            color: #000;
+            font-weight: bold;
+            font-size: 1rem;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: all 0.3s ease;
+            pointer-events: auto;
+        }
+        
+        .start-button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 10px 30px rgba(0, 255, 136, 0.5);
+        }
+    </style>
+</head>
+<body>
+    <!-- WebGL Canvas for 4D Visualization -->
+    <canvas id="visualization-canvas"></canvas>
+    
+    <!-- Hero Overlay -->
+    <div class="hero-overlay">
+        <h1 class="hero-title">VIB3CODE Enhanced</h1>
+        <p class="hero-subtitle">Digital Sovereignty Platform with 4D Visualization</p>
+        <p style="color: #888; font-size: 0.9rem; margin-bottom: 20px;">Powered by PPPkernel Advanced Visualization Engine</p>
+        <button class="start-button" onclick="startVisualization()">
+            🔮 Activate 4D Visualization
+        </button>
+    </div>
+
+    <!-- Floating Panels -->
+    
+    <!-- PPPkernel Styles Panel -->
+    <div class="floating-panel ppp-styles">
+        <div class="panel-title">🔮 PPPkernel Styles</div>
+        <button class="style-button active" onclick="setVisualizationMode('tesseract')" id="btn-tesseract">Tesseract Hypercube</button>
+        <button class="style-button" onclick="setVisualizationMode('klein')" id="btn-klein">Klein Bottle</button>
+        <button class="style-button" onclick="setVisualizationMode('mobius')" id="btn-mobius">Möbius Strip</button>
+        <button class="style-button" onclick="setVisualizationMode('lorenz')" id="btn-lorenz">Lorenz Attractor</button>
+        <button class="style-button" onclick="setVisualizationMode('mandelbrot')" id="btn-mandelbrot">Mandelbrot Set</button>
+        <button class="style-button" onclick="setVisualizationMode('sierpinski')" id="btn-sierpinski">Sierpiński Triangle</button>
+        <button class="style-button" onclick="setVisualizationMode('hypersphere')" id="btn-hypersphere">4D Hypersphere</button>
+        <div style="margin-top: 10px; padding-top: 8px; border-top: 1px solid rgba(0, 255, 136, 0.3); font-size: 8px; color: #888;">
+            Current: <span id="current-mode">Tesseract Hypercube</span>
+        </div>
+    </div>
+
+    <!-- Performance Monitor -->
+    <div class="floating-panel performance">
+        <div class="panel-title">📊 Performance Monitor</div>
+        <div class="metric-row">
+            <span>FPS:</span>
+            <span class="metric-value" id="fps-display">60</span>
+        </div>
+        <div class="metric-row">
+            <span>Vertices:</span>
+            <span class="metric-value" id="vertices-display">16</span>
+        </div>
+        <div class="metric-row">
+            <span>4D Rotation:</span>
+            <span class="metric-value" id="rotation-display">XY</span>
+        </div>
+        <div class="metric-row">
+            <span>WebGL:</span>
+            <span class="metric-value">Active</span>
+        </div>
+        <div style="margin-top: 8px; font-size: 8px; color: #888;">
+            <span class="status-indicator status-active"></span>4D engine operational
+        </div>
+    </div>
+
+    <!-- Community Engagement -->
+    <div class="floating-panel community">
+        <div class="panel-title">👥 Community Engagement</div>
+        <div class="metric-row">
+            <span>Certified Developers:</span>
+            <span class="metric-value">247</span>
+        </div>
+        <div class="metric-row">
+            <span>Active Projects:</span>
+            <span class="metric-value">89</span>
+        </div>
+        <div class="metric-row">
+            <span>EMA Compliance:</span>
+            <span class="metric-value">100%</span>
+        </div>
+        <button class="demo-button" onclick="showCertification()">View Certification Program</button>
+        <button class="demo-button" onclick="exportData()">Export User Data</button>
+        <div style="margin-top: 8px; font-size: 8px; color: #888;">
+            <span class="status-indicator status-active"></span>EMA principles active
+        </div>
+    </div>
+
+    <!-- Developer Tools -->
+    <div class="floating-panel developer">
+        <div class="panel-title">🛠 Developer Tools</div>
+        <button class="demo-button" onclick="showConsoleCommands()">Console Commands</button>
+        <button class="demo-button" onclick="showAPIReference()">API Reference</button>
+        <button class="demo-button" onclick="showGitHubIntegration()">GitHub Integration</button>
+        <button class="demo-button" onclick="showAgenticFramework()">Agentic Framework</button>
+        <div style="margin-top: 8px; font-size: 8px; color: #888;">
+            <span class="status-indicator status-info"></span>Claude + Jules ready
+        </div>
+    </div>
+
+    <!-- Audio System -->
+    <div class="floating-panel audio">
+        <div class="panel-title">🎵 Audio System</div>
+        <div style="font-size: 9px; margin-bottom: 8px;">
+            <strong>ParseHer Series:</strong> 7 episodes
+        </div>
+        <button class="demo-button" onclick="playParseHer()">Play ParseHer Episode</button>
+        <button class="demo-button" onclick="showGenRLMillz()">Gen-RL-MiLLz Content</button>
+        <button class="demo-button" onclick="showFrequencyGolems()">Frequency Golems</button>
+        <div style="margin-top: 8px; font-size: 8px; color: #888;">
+            <span class="status-indicator status-warning"></span>Audio files not included
+        </div>
+    </div>
+
+    <script>
+        console.log('🚀 VIB3CODE Enhanced - Full 4D Visualization Loading...');
+        
+        // WebGL and 4D Visualization System
+        let canvas, gl, program;
+        let currentMode = 'tesseract';
+        let animationId;
+        let time = 0;
+        let fps = 0;
+        let lastFrameTime = 0;
+        let frameCount = 0;
+        let isVisualizationActive = false;
+        
+        // 4D to 3D projection matrix
+        let projectionMatrix = [
+            1, 0, 0, 0,
+            0, 1, 0, 0,
+            0, 0, 1, 0
+        ];
+        
+        // Vertex shader for 4D visualization
+        const vertexShaderSource = `
+            attribute vec4 position;
+            attribute vec3 color;
+            uniform mat4 uProjectionMatrix;
+            uniform mat4 uModelViewMatrix;
+            uniform float uTime;
+            varying vec3 vColor;
+            
+            void main() {
+                // 4D rotation matrices
+                float angle = uTime * 0.5;
+                
+                // XY rotation
+                mat2 rotXY = mat2(cos(angle), -sin(angle), sin(angle), cos(angle));
+                
+                // ZW rotation  
+                mat2 rotZW = mat2(cos(angle * 1.3), -sin(angle * 1.3), sin(angle * 1.3), cos(angle * 1.3));
+                
+                // Apply 4D rotations
+                vec2 xy = rotXY * position.xy;
+                vec2 zw = rotZW * position.zw;
+                
+                // 4D to 3D projection (perspective divide by w + distance)
+                float w = zw.y + 3.0;
+                vec3 projected = vec3(xy / w, zw.x / w);
+                
+                gl_Position = uProjectionMatrix * uModelViewMatrix * vec4(projected, 1.0);
+                gl_PointSize = max(1.0, 10.0 / w);
+                
+                vColor = color;
+            }
+        `;
+        
+        // Fragment shader
+        const fragmentShaderSource = `
+            precision mediump float;
+            varying vec3 vColor;
+            uniform mediump float uTime;
+            
+            void main() {
+                // Pulsing effect
+                float pulse = 0.8 + 0.2 * sin(uTime * 3.0);
+                
+                // Point visualization
+                float dist = length(gl_PointCoord - 0.5);
+                if (dist > 0.5) discard;
+                
+                float alpha = 1.0 - smoothstep(0.3, 0.5, dist);
+                gl_FragColor = vec4(vColor * pulse, alpha);
+            }
+        `;
+        
+        // 4D Tesseract vertices (16 vertices)
+        const tesseractVertices = [
+            // Inner cube (w = -1)
+            -1, -1, -1, -1,   1, -1, -1, -1,   1,  1, -1, -1,  -1,  1, -1, -1,
+            -1, -1,  1, -1,   1, -1,  1, -1,   1,  1,  1, -1,  -1,  1,  1, -1,
+            // Outer cube (w = 1)
+            -1, -1, -1,  1,   1, -1, -1,  1,   1,  1, -1,  1,  -1,  1, -1,  1,
+            -1, -1,  1,  1,   1, -1,  1,  1,   1,  1,  1,  1,  -1,  1,  1,  1
+        ];
+        
+        // Klein bottle parametric equations (simplified for demo)
+        function generateKleinBottle() {
+            const vertices = [];
+            const steps = 50;
+            
+            for (let u = 0; u < steps; u++) {
+                for (let v = 0; v < steps; v++) {
+                    const uu = (u / steps) * 2 * Math.PI;
+                    const vv = (v / steps) * 2 * Math.PI;
+                    
+                    const x = (2 + Math.cos(vv / 2) * Math.sin(uu) - Math.sin(vv / 2) * Math.sin(2 * uu)) * Math.cos(vv);
+                    const y = (2 + Math.cos(vv / 2) * Math.sin(uu) - Math.sin(vv / 2) * Math.sin(2 * uu)) * Math.sin(vv);
+                    const z = Math.sin(vv / 2) * Math.sin(uu) + Math.cos(vv / 2) * Math.sin(2 * uu);
+                    const w = Math.sin(uu) * Math.cos(vv / 2);
+                    
+                    vertices.push(x * 0.3, y * 0.3, z * 0.3, w * 0.3);
+                }
+            }
+            return vertices;
+        }
+        
+        // Möbius strip in 4D
+        function generateMobiusStrip() {
+            const vertices = [];
+            const steps = 100;
+            
+            for (let u = 0; u < steps; u++) {
+                const uu = (u / steps) * 2 * Math.PI;
+                const x = (1 + 0.5 * Math.cos(uu / 2)) * Math.cos(uu);
+                const y = (1 + 0.5 * Math.cos(uu / 2)) * Math.sin(uu);
+                const z = 0.5 * Math.sin(uu / 2);
+                const w = Math.sin(uu) * 0.5;
+                
+                vertices.push(x, y, z, w);
+            }
+            return vertices;
+        }
+        
+        // Lorenz attractor in 4D
+        function generateLorenzAttractor() {
+            const vertices = [];
+            let x = 1, y = 1, z = 1, w = 1;
+            const dt = 0.01;
+            const sigma = 10, rho = 28, beta = 8/3;
+            
+            for (let i = 0; i < 2000; i++) {
+                const dx = sigma * (y - x);
+                const dy = x * (rho - z) - y;
+                const dz = x * y - beta * z;
+                const dw = Math.sin(x * 0.1) * Math.cos(y * 0.1);
+                
+                x += dx * dt;
+                y += dy * dt;
+                z += dz * dt;
+                w += dw * dt;
+                
+                vertices.push(x * 0.05, y * 0.05, z * 0.05, w * 0.05);
+            }
+            return vertices;
+        }
+        
+        // Generate vertices based on current mode
+        function getVerticesForMode(mode) {
+            switch (mode) {
+                case 'tesseract':
+                    return tesseractVertices;
+                case 'klein':
+                    return generateKleinBottle();
+                case 'mobius':
+                    return generateMobiusStrip();
+                case 'lorenz':
+                    return generateLorenzAttractor();
+                case 'mandelbrot':
+                    // Simplified 4D Mandelbrot
+                    const vertices = [];
+                    for (let i = 0; i < 500; i++) {
+                        const x = (Math.random() - 0.5) * 4;
+                        const y = (Math.random() - 0.5) * 4;
+                        const z = Math.sin(x) * Math.cos(y);
+                        const w = Math.cos(x) * Math.sin(y);
+                        vertices.push(x * 0.3, y * 0.3, z * 0.3, w * 0.3);
+                    }
+                    return vertices;
+                case 'sierpinski':
+                    // 4D Sierpiński-like fractal
+                    const sVertices = [];
+                    function addPoint(x, y, z, w, depth) {
+                        if (depth === 0) {
+                            sVertices.push(x, y, z, w);
+                            return;
+                        }
+                        const scale = 0.5;
+                        addPoint(x * scale - 0.5, y * scale - 0.5, z * scale - 0.5, w * scale - 0.5, depth - 1);
+                        addPoint(x * scale + 0.5, y * scale - 0.5, z * scale - 0.5, w * scale + 0.5, depth - 1);
+                        addPoint(x * scale - 0.5, y * scale + 0.5, z * scale - 0.5, w * scale - 0.5, depth - 1);
+                        addPoint(x * scale - 0.5, y * scale - 0.5, z * scale + 0.5, w * scale + 0.5, depth - 1);
+                    }
+                    addPoint(0, 0, 0, 0, 4);
+                    return sVertices;
+                case 'hypersphere':
+                    // 4D hypersphere
+                    const hVertices = [];
+                    for (let i = 0; i < 1000; i++) {
+                        const theta = Math.random() * 2 * Math.PI;
+                        const phi = Math.random() * Math.PI;
+                        const psi = Math.random() * Math.PI;
+                        
+                        const x = Math.cos(theta) * Math.sin(phi) * Math.sin(psi);
+                        const y = Math.sin(theta) * Math.sin(phi) * Math.sin(psi);
+                        const z = Math.cos(phi) * Math.sin(psi);
+                        const w = Math.cos(psi);
+                        
+                        hVertices.push(x, y, z, w);
+                    }
+                    return hVertices;
+                default:
+                    return tesseractVertices;
+            }
+        }
+        
+        // Initialize WebGL
+        function initWebGL() {
+            canvas = document.getElementById('visualization-canvas');
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            
+            gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+            if (!gl) {
+                console.error('WebGL not supported');
+                return false;
+            }
+            
+            // Create and compile shaders
+            const vertexShader = createShader(gl, gl.VERTEX_SHADER, vertexShaderSource);
+            const fragmentShader = createShader(gl, gl.FRAGMENT_SHADER, fragmentShaderSource);
+            
+            // Create program
+            program = createProgram(gl, vertexShader, fragmentShader);
+            gl.useProgram(program);
+            
+            // Set up viewport
+            gl.viewport(0, 0, canvas.width, canvas.height);
+            gl.enable(gl.BLEND);
+            gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+            gl.enable(gl.DEPTH_TEST);
+            
+            return true;
+        }
+        
+        function createShader(gl, type, source) {
+            const shader = gl.createShader(type);
+            gl.shaderSource(shader, source);
+            gl.compileShader(shader);
+            
+            if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
+                console.error('Shader compilation error:', gl.getShaderInfoLog(shader));
+                gl.deleteShader(shader);
+                return null;
+            }
+            
+            return shader;
+        }
+        
+        function createProgram(gl, vertexShader, fragmentShader) {
+            const program = gl.createProgram();
+            gl.attachShader(program, vertexShader);
+            gl.attachShader(program, fragmentShader);
+            gl.linkProgram(program);
+            
+            if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
+                console.error('Program linking error:', gl.getProgramInfoLog(program));
+                gl.deleteProgram(program);
+                return null;
+            }
+            
+            return program;
+        }
+        
+        // Render loop
+        function render() {
+            if (!isVisualizationActive) return;
+            
+            time += 0.016; // ~60fps
+            
+            // Calculate FPS
+            const currentTime = Date.now();
+            frameCount++;
+            if (currentTime - lastFrameTime >= 1000) {
+                fps = frameCount;
+                frameCount = 0;
+                lastFrameTime = currentTime;
+                document.getElementById('fps-display').textContent = fps;
+            }
+            
+            // Clear canvas
+            gl.clearColor(0, 0, 0, 1);
+            gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+            
+            // Get vertices for current mode
+            const vertices = getVerticesForMode(currentMode);
+            
+            // Create buffer
+            const positionBuffer = gl.createBuffer();
+            gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
+            gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
+            
+            // Set up attributes
+            const positionLocation = gl.getAttribLocation(program, 'position');
+            gl.enableVertexAttribArray(positionLocation);
+            gl.vertexAttribPointer(positionLocation, 4, gl.FLOAT, false, 0, 0);
+            
+            // Generate colors
+            const colors = [];
+            for (let i = 0; i < vertices.length / 4; i++) {
+                const hue = (i / (vertices.length / 4)) * 360 + time * 30;
+                const r = 0.5 + 0.5 * Math.sin((hue + 0) * Math.PI / 180);
+                const g = 0.5 + 0.5 * Math.sin((hue + 120) * Math.PI / 180);
+                const b = 0.5 + 0.5 * Math.sin((hue + 240) * Math.PI / 180);
+                colors.push(r, g, b);
+            }
+            
+            const colorBuffer = gl.createBuffer();
+            gl.bindBuffer(gl.ARRAY_BUFFER, colorBuffer);
+            gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(colors), gl.STATIC_DRAW);
+            
+            const colorLocation = gl.getAttribLocation(program, 'color');
+            gl.enableVertexAttribArray(colorLocation);
+            gl.vertexAttribPointer(colorLocation, 3, gl.FLOAT, false, 0, 0);
+            
+            // Set uniforms
+            const timeLocation = gl.getUniformLocation(program, 'uTime');
+            gl.uniform1f(timeLocation, time);
+            
+            const projectionLocation = gl.getUniformLocation(program, 'uProjectionMatrix');
+            const modelViewLocation = gl.getUniformLocation(program, 'uModelViewMatrix');
+            
+            // Create perspective projection matrix
+            const aspect = canvas.width / canvas.height;
+            const fov = Math.PI / 4;
+            const near = 0.1;
+            const far = 100.0;
+            
+            const projMatrix = perspective(fov, aspect, near, far);
+            const modelViewMatrix = lookAt([0, 0, 5], [0, 0, 0], [0, 1, 0]);
+            
+            gl.uniformMatrix4fv(projectionLocation, false, projMatrix);
+            gl.uniformMatrix4fv(modelViewLocation, false, modelViewMatrix);
+            
+            // Draw points
+            gl.drawArrays(gl.POINTS, 0, vertices.length / 4);
+            
+            // Update metrics
+            document.getElementById('vertices-display').textContent = vertices.length / 4;
+            
+            // Update rotation display
+            const rotations = ['XY', 'ZW', 'XZ', 'YW', 'XW', 'YZ'];
+            const rotationIndex = Math.floor(time / 2) % rotations.length;
+            document.getElementById('rotation-display').textContent = rotations[rotationIndex];
+            
+            animationId = requestAnimationFrame(render);
+        }
+        
+        // Matrix utilities
+        function perspective(fovy, aspect, near, far) {
+            const f = 1.0 / Math.tan(fovy / 2);
+            const nf = 1 / (near - far);
+            
+            return [
+                f / aspect, 0, 0, 0,
+                0, f, 0, 0,
+                0, 0, (far + near) * nf, -1,
+                0, 0, 2 * far * near * nf, 0
+            ];
+        }
+        
+        function lookAt(eye, center, up) {
+            const zAxis = normalize(subtract(eye, center));
+            const xAxis = normalize(cross(up, zAxis));
+            const yAxis = cross(zAxis, xAxis);
+            
+            return [
+                xAxis[0], yAxis[0], zAxis[0], 0,
+                xAxis[1], yAxis[1], zAxis[1], 0,
+                xAxis[2], yAxis[2], zAxis[2], 0,
+                -dot(xAxis, eye), -dot(yAxis, eye), -dot(zAxis, eye), 1
+            ];
+        }
+        
+        function normalize(v) {
+            const length = Math.sqrt(v[0] * v[0] + v[1] * v[1] + v[2] * v[2]);
+            return [v[0] / length, v[1] / length, v[2] / length];
+        }
+        
+        function subtract(a, b) {
+            return [a[0] - b[0], a[1] - b[1], a[2] - b[2]];
+        }
+        
+        function cross(a, b) {
+            return [
+                a[1] * b[2] - a[2] * b[1],
+                a[2] * b[0] - a[0] * b[2],
+                a[0] * b[1] - a[1] * b[0]
+            ];
+        }
+        
+        function dot(a, b) {
+            return a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
+        }
+        
+        // UI Functions
+        function startVisualization() {
+            if (initWebGL()) {
+                isVisualizationActive = true;
+                document.querySelector('.hero-overlay').style.display = 'none';
+                render();
+                console.log('🔮 4D Visualization activated!');
+                showNotification('🔮 4D Visualization Active!', 'success');
+            } else {
+                showNotification('❌ WebGL not supported', 'error');
+            }
+        }
+        
+        function setVisualizationMode(mode) {
+            currentMode = mode;
+            
+            // Update button states
+            document.querySelectorAll('.style-button').forEach(btn => btn.classList.remove('active'));
+            document.getElementById(`btn-${mode}`).classList.add('active');
+            
+            // Update display
+            const modeNames = {
+                'tesseract': 'Tesseract Hypercube',
+                'klein': 'Klein Bottle',
+                'mobius': 'Möbius Strip',
+                'lorenz': 'Lorenz Attractor',
+                'mandelbrot': 'Mandelbrot Set',
+                'sierpinski': 'Sierpiński Triangle',
+                'hypersphere': '4D Hypersphere'
+            };
+            
+            document.getElementById('current-mode').textContent = modeNames[mode];
+            console.log(`🔮 Switched to ${modeNames[mode]} visualization`);
+            showNotification(`Switched to ${modeNames[mode]}`, 'info');
+        }
+        
+        function showNotification(message, type) {
+            const notification = document.createElement('div');
+            notification.innerHTML = message;
+            notification.style.cssText = `
+                position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
+                background: rgba(0, 20, 40, 0.95); border: 1px solid #00ff88;
+                border-radius: 8px; padding: 15px 25px; color: #00ff88;
+                font-family: 'Orbitron', monospace; font-size: 14px; font-weight: bold;
+                z-index: 10000; backdrop-filter: blur(10px);
+                box-shadow: 0 10px 30px rgba(0, 255, 136, 0.3);
+                animation: slideDown 0.3s ease-out;
+            `;
+            
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.style.animation = 'slideUp 0.3s ease-in forwards';
+                setTimeout(() => notification.remove(), 300);
+            }, 2700);
+        }
+        
+        // Demo Functions (same as before)
+        function showCertification() {
+            console.log('🎓 VIB3CODE Developer Certification Program:');
+            console.log('  • EMA Foundation: Understanding core principles');
+            console.log('  • EMA Specialist: Advanced implementation');
+            console.log('  • EMA Master Architect: Leadership and standards');
+            showNotification('🎓 Check console for certification details', 'info');
+        }
+        
+        function exportData() {
+            console.log('📊 Exporting user data with full EMA compliance...');
+            console.log('✅ Data export complete - all data portable and user-controlled');
+            showNotification('📊 Data exported successfully!', 'success');
+        }
+        
+        function showConsoleCommands() {
+            console.log('🛠 VIB3CODE Enhanced Console Commands:');
+            console.log('setVisualizationMode("tesseract") - Switch to Tesseract');
+            console.log('setVisualizationMode("klein") - Switch to Klein Bottle');
+            console.log('setVisualizationMode("lorenz") - Switch to Lorenz Attractor');
+            console.log('startVisualization() - Restart visualization');
+            showNotification('🛠 Check console for commands', 'info');
+        }
+        
+        function showAPIReference() {
+            console.log('📚 VIB3CODE Enhanced API Reference:');
+            console.log('WebGL 4D Visualization Engine with real-time mathematical projections');
+            showNotification('📚 API documentation loaded', 'info');
+        }
+        
+        function showGitHubIntegration() {
+            console.log('🔗 GitHub Integration: https://github.com/Domusgpt/vib3code-enhanced');
+            showNotification('🔗 GitHub integration active', 'info');
+        }
+        
+        function showAgenticFramework() {
+            console.log('🤖 Agentic Development Framework operational');
+            showNotification('🤖 Agentic framework ready', 'info');
+        }
+        
+        function playParseHer() {
+            console.log('📻 ParseHer Episode: "Liberating Data for AI Agents"');
+            showNotification('📻 ParseHer series ready', 'info');
+        }
+        
+        function showGenRLMillz() {
+            console.log('🎭 Gen-RL-MiLLz: Consciousness Oscillations Vol. I');
+            showNotification('🎭 Gen-RL-MiLLz content loaded', 'info');
+        }
+        
+        function showFrequencyGolems() {
+            console.log('🎵 Frequency Golems: Where Algorithms Meet Soul');
+            showNotification('🎵 Frequency Golems portal opened', 'info');
+        }
+        
+        // Window resize handler
+        window.addEventListener('resize', () => {
+            if (canvas) {
+                canvas.width = window.innerWidth;
+                canvas.height = window.innerHeight;
+                gl.viewport(0, 0, canvas.width, canvas.height);
+            }
+        });
+        
+        // Initialize
+        console.log('✅ VIB3CODE Enhanced - Full 4D Visualization Ready!');
+        console.log('🔮 Click "Activate 4D Visualization" to see real WebGL 4D math!');
+        console.log('🎯 Use the floating panels to switch between 7 different 4D geometries');
+        console.log('📊 Watch the performance monitor for live FPS and vertex counts');
+        
+        // Add animation styles
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes slideDown {
+                from { transform: translateX(-50%) translateY(-100%); opacity: 0; }
+                to { transform: translateX(-50%) translateY(0); opacity: 1; }
+            }
+            @keyframes slideUp {
+                from { transform: translateX(-50%) translateY(0); opacity: 1; }
+                to { transform: translateX(-50%) translateY(-100%); opacity: 0; }
+            }
+        `;
+        document.head.appendChild(style);
+    </script>
+</body>
+</html>
