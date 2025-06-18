@@ -223,6 +223,7 @@
                 <p>Digital Sovereignty Platform</p>
                 <p>Reactive HyperAV Visualization Core</p>
                 <p style="font-size: 0.9rem; color: #888;">Scroll, click, hold, or stay idle to morph the hypercube lattice</p>
+                <!-- Your blog content for this section (text, images, headings, etc.) goes here. -->
             </div>
         </section>
         
@@ -355,78 +356,79 @@
                 };
                 
                 // Theme configurations (editor-controlled)
+                // This is the primary location for an editor to customize theme parameters.
                 this.themeConfigs = {
                     hypercube: {
-                        baseColor: [1.0, 0.0, 1.0],      // Magenta
-                        gridDensity: 12.0,
-                        morphFactor: 0.5,
-                        dimension: 3.5,
-                        glitchIntensity: 0.3,
-                        rotationSpeed: 0.5,
-                        geometry: 'hypercube'
+                        baseColor: [1.0, 0.0, 1.0],      // [R, G, B] array, values 0.0-1.0 for main theme color
+                        gridDensity: 12.0,               // Higher values = denser grid/pattern
+                        morphFactor: 0.5,                // Controls base level of shape morphing/dynamics
+                        dimension: 3.5,                  // Base dimension, typically 3.0-4.0. Interaction can increase this towards 4D visualization
+                        glitchIntensity: 0.3,            // Base intensity of glitch effects, 0.0 for none
+                        rotationSpeed: 0.5,              // Base speed of background geometry rotation
+                        geometry: 'hypercube'            // Internal name of the geometry, matches shader functions. Do not change unless new geometries are added to shader.
                     },
                     tetrahedron: {
-                        baseColor: [0.0, 1.0, 1.0],      // Cyan
-                        gridDensity: 8.0,
-                        morphFactor: 0.7,
-                        dimension: 3.2,
-                        glitchIntensity: 0.2,
-                        rotationSpeed: 0.7,
-                        geometry: 'tetrahedron'
+                        baseColor: [0.0, 1.0, 1.0],      // [R, G, B] array, values 0.0-1.0 for main theme color
+                        gridDensity: 8.0,                // Higher values = denser grid/pattern
+                        morphFactor: 0.7,                // Controls base level of shape morphing/dynamics
+                        dimension: 3.2,                  // Base dimension, typically 3.0-4.0. Interaction can increase this towards 4D visualization
+                        glitchIntensity: 0.2,            // Base intensity of glitch effects, 0.0 for none
+                        rotationSpeed: 0.7,              // Base speed of background geometry rotation
+                        geometry: 'tetrahedron'          // Internal name of the geometry, matches shader functions. Do not change unless new geometries are added to shader.
                     },
                     sphere: {
-                        baseColor: [1.0, 1.0, 0.0],      // Yellow
-                        gridDensity: 15.0,
-                        morphFactor: 0.3,
-                        dimension: 3.8,
-                        glitchIntensity: 0.1,
-                        rotationSpeed: 0.3,
-                        geometry: 'sphere'
+                        baseColor: [1.0, 1.0, 0.0],      // [R, G, B] array, values 0.0-1.0 for main theme color
+                        gridDensity: 15.0,               // Higher values = denser grid/pattern
+                        morphFactor: 0.3,                // Controls base level of shape morphing/dynamics
+                        dimension: 3.8,                  // Base dimension, typically 3.0-4.0. Interaction can increase this towards 4D visualization
+                        glitchIntensity: 0.1,            // Base intensity of glitch effects, 0.0 for none
+                        rotationSpeed: 0.3,              // Base speed of background geometry rotation
+                        geometry: 'sphere'               // Internal name of the geometry, matches shader functions. Do not change unless new geometries are added to shader.
                     },
                     torus: {
-                        baseColor: [0.0, 1.0, 0.0],      // Green
-                        gridDensity: 10.0,
-                        morphFactor: 0.8,
-                        dimension: 3.6,
-                        glitchIntensity: 0.4,
-                        rotationSpeed: 0.6,
-                        geometry: 'torus'
+                        baseColor: [0.0, 1.0, 0.0],      // [R, G, B] array, values 0.0-1.0 for main theme color
+                        gridDensity: 10.0,               // Higher values = denser grid/pattern
+                        morphFactor: 0.8,                // Controls base level of shape morphing/dynamics
+                        dimension: 3.6,                  // Base dimension, typically 3.0-4.0. Interaction can increase this towards 4D visualization
+                        glitchIntensity: 0.4,            // Base intensity of glitch effects, 0.0 for none
+                        rotationSpeed: 0.6,              // Base speed of background geometry rotation
+                        geometry: 'torus'                // Internal name of the geometry, matches shader functions. Do not change unless new geometries are added to shader.
                     },
                     klein: {
-                        baseColor: [1.0, 0.5, 0.0],      // Orange
-                        gridDensity: 14.0,
-                        morphFactor: 0.9,
-                        dimension: 3.9,
-                        glitchIntensity: 0.5,
-                        rotationSpeed: 0.4,
-                        geometry: 'klein'
+                        baseColor: [1.0, 0.5, 0.0],      // [R, G, B] array, values 0.0-1.0 for main theme color
+                        gridDensity: 14.0,               // Higher values = denser grid/pattern
+                        morphFactor: 0.9,                // Controls base level of shape morphing/dynamics
+                        dimension: 3.9,                  // Base dimension, typically 3.0-4.0. Interaction can increase this towards 4D visualization
+                        glitchIntensity: 0.5,            // Base intensity of glitch effects, 0.0 for none
+                        rotationSpeed: 0.4,              // Base speed of background geometry rotation
+                        geometry: 'klein'                // Internal name of the geometry, matches shader functions. Do not change unless new geometries are added to shader.
                     },
                     fractal: {
-                        baseColor: [0.5, 0.0, 1.0],      // Purple
-                        gridDensity: 20.0,
-                        morphFactor: 0.6,
-                        dimension: 3.7,
-                        glitchIntensity: 0.6,
-                        rotationSpeed: 0.8,
-                        geometry: 'fractal'
+                        baseColor: [0.5, 0.0, 1.0],      // [R, G, B] array, values 0.0-1.0 for main theme color
+                        gridDensity: 20.0,               // Higher values = denser grid/pattern
+                        morphFactor: 0.6,                // Controls base level of shape morphing/dynamics
+                        dimension: 3.7,                  // Base dimension, typically 3.0-4.0. Interaction can increase this towards 4D visualization
+                        glitchIntensity: 0.6,            // Base intensity of glitch effects, 0.0 for none
+                        rotationSpeed: 0.8,              // Base speed of background geometry rotation
+                        geometry: 'fractal'              // Internal name of the geometry, matches shader functions. Do not change unless new geometries are added to shader.
                     },
                     wave: {
-                        baseColor: [1.0, 0.0, 0.5],      // Pink
-                        gridDensity: 16.0,
-                        morphFactor: 0.4,
-                        dimension: 3.3,
-                        glitchIntensity: 0.3,
-                        rotationSpeed: 0.9,
-                        geometry: 'wave'
+                        baseColor: [1.0, 0.0, 0.5],      // [R, G, B] array, values 0.0-1.0 for main theme color
+                        gridDensity: 16.0,               // Higher values = denser grid/pattern
+                        morphFactor: 0.4,                // Controls base level of shape morphing/dynamics
+                        dimension: 3.3,                  // Base dimension, typically 3.0-4.0. Interaction can increase this towards 4D visualization
+                        glitchIntensity: 0.3,            // Base intensity of glitch effects, 0.0 for none
+                        rotationSpeed: 0.9,              // Base speed of background geometry rotation
+                        geometry: 'wave'                 // Internal name of the geometry, matches shader functions. Do not change unless new geometries are added to shader.
                     },
                     crystal: {
-                        baseColor: [0.0, 1.0, 0.5],      // Mint
-                        gridDensity: 18.0,
-                        morphFactor: 0.2,
-                        dimension: 3.1,
-                        glitchIntensity: 0.2,
-                        rotationSpeed: 0.2,
-                        geometry: 'crystal'
+                        baseColor: [0.0, 1.0, 0.5],      // [R, G, B] array, values 0.0-1.0 for main theme color
+                        gridDensity: 18.0,               // Higher values = denser grid/pattern
+                        morphFactor: 0.2,                // Controls base level of shape morphing/dynamics
+                        dimension: 3.1,                  // Base dimension, typically 3.0-4.0. Interaction can increase this towards 4D visualization
+                        glitchIntensity: 0.2,            // Base intensity of glitch effects, 0.0 for none
+                        rotationSpeed: 0.2,              // Base speed of background geometry rotation
+                        geometry: 'crystal'              // Internal name of the geometry, matches shader functions. Do not change unless new geometries are added to shader.
                     }
                 };
                 
@@ -775,8 +777,10 @@
                             // Update navigation
                             document.querySelectorAll('.nav-dot').forEach(dot => dot.classList.remove('active'));
                             const activeSection = entry.target.dataset.section;
-                            document.querySelector(`[data-section="${activeSection}"]`).scrollIntoView;
-                            document.querySelector(`[data-section="${activeSection}"]`)?.classList.add('active');
+                            const activeDot = document.querySelector(`.nav-dot[data-section="${activeSection}"]`);
+                            if (activeDot) {
+                                activeDot.classList.add('active');
+                            }
                         }
                     });
                 }, { threshold: 0.5 });
@@ -792,9 +796,6 @@
                 
                 // Update UI
                 document.getElementById('interactionType').textContent = type.charAt(0).toUpperCase() + type.slice(1);
-                document.getElementById('morphLevel').textContent = this.params.morphFactor.toFixed(2);
-                document.getElementById('gridDensity').textContent = this.params.gridDensity.toFixed(1);
-                document.getElementById('dimensionLevel').textContent = this.params.dimension.toFixed(2);
             }
             
             setTheme(themeName) {
@@ -866,6 +867,11 @@
                 }
                 const currentDimension = this.params.dimension + holdEffect * 0.5;
                 
+                // Update DOM elements with actual values
+                document.getElementById('morphLevel').textContent = currentMorphFactor.toFixed(2);
+                document.getElementById('gridDensity').textContent = currentGridDensity.toFixed(1);
+                document.getElementById('dimensionLevel').textContent = currentDimension.toFixed(2);
+
                 // Map geometry name to number
                 const geometryMap = {
                     'hypercube': 0, 'tetrahedron': 1, 'sphere': 2, 'torus': 3,
