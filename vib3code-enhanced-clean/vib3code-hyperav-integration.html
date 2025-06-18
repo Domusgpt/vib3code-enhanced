@@ -1,0 +1,806 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VIB3CODE Enhanced - HyperAV Integration</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔮</text></svg>">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            background: #000;
+            color: #fff;
+            font-family: 'Orbitron', 'Courier New', monospace;
+            overflow-x: hidden;
+        }
+        
+        /* HyperAV Canvas Background */
+        #hyperav-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+        
+        /* Magazine Content Layer */
+        .magazine-content {
+            position: relative;
+            z-index: 10;
+            background: rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(1px);
+        }
+        
+        .hero-section {
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 0 20px;
+        }
+        
+        .hero-title {
+            font-size: 5rem;
+            font-weight: 900;
+            background: linear-gradient(45deg, #ff00ff, #00ffff, #ffff00);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 30px;
+            text-shadow: 0 0 50px rgba(255, 0, 255, 0.5);
+            animation: pulse 3s ease-in-out infinite;
+        }
+        
+        .hero-subtitle {
+            font-size: 1.5rem;
+            color: #00ffff;
+            margin-bottom: 50px;
+            opacity: 0.9;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 0.8; transform: scale(1); }
+            50% { opacity: 1; transform: scale(1.02); }
+        }
+        
+        .content-section {
+            min-height: 100vh;
+            padding: 80px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .content-box {
+            max-width: 800px;
+            background: rgba(0, 20, 40, 0.7);
+            border: 1px solid rgba(0, 255, 255, 0.3);
+            border-radius: 15px;
+            padding: 40px;
+            backdrop-filter: blur(10px);
+        }
+        
+        .content-box h2 {
+            color: #ff00ff;
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+        }
+        
+        .content-box p {
+            font-size: 1.1rem;
+            line-height: 1.8;
+            color: #e0e0ff;
+            margin-bottom: 20px;
+        }
+        
+        /* Floating Controls */
+        .hyperav-controls {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(0, 20, 40, 0.9);
+            border: 1px solid #00ffff;
+            border-radius: 10px;
+            padding: 20px;
+            z-index: 1000;
+            backdrop-filter: blur(10px);
+            min-width: 250px;
+        }
+        
+        .controls-title {
+            color: #00ffff;
+            font-weight: bold;
+            margin-bottom: 15px;
+            text-align: center;
+            border-bottom: 1px solid rgba(0, 255, 255, 0.3);
+            padding-bottom: 10px;
+        }
+        
+        .control-group {
+            margin-bottom: 15px;
+        }
+        
+        .control-group label {
+            display: block;
+            color: #ff00ff;
+            font-size: 12px;
+            margin-bottom: 5px;
+        }
+        
+        .control-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .slider {
+            flex: 1;
+            height: 4px;
+            background: linear-gradient(to right, #0a1130, #ff00ff);
+            border-radius: 2px;
+            outline: none;
+            -webkit-appearance: none;
+        }
+        
+        .slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #00ffff;
+            cursor: pointer;
+            box-shadow: 0 0 8px #00ffff;
+        }
+        
+        .value-display {
+            color: #ffff00;
+            font-family: monospace;
+            font-size: 11px;
+            min-width: 35px;
+            text-align: center;
+        }
+        
+        .magazine-metrics {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            background: rgba(0, 20, 40, 0.9);
+            border: 1px solid #ffff00;
+            border-radius: 10px;
+            padding: 15px;
+            z-index: 1000;
+            backdrop-filter: blur(10px);
+            font-size: 12px;
+        }
+        
+        .metric {
+            display: flex;
+            justify-content: space-between;
+            margin: 3px 0;
+            min-width: 150px;
+        }
+        
+        .metric-label {
+            color: #ffff00;
+        }
+        
+        .metric-value {
+            color: #00ffff;
+            font-family: monospace;
+        }
+        
+        /* Scroll indicator */
+        .scroll-indicator {
+            position: fixed;
+            right: 50px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 4px;
+            height: 200px;
+            background: rgba(0, 255, 255, 0.2);
+            border-radius: 2px;
+            z-index: 1000;
+        }
+        
+        .scroll-progress {
+            width: 100%;
+            background: linear-gradient(to bottom, #ff00ff, #00ffff);
+            border-radius: 2px;
+            transition: height 0.1s ease;
+        }
+    </style>
+</head>
+<body>
+    <!-- HyperAV Visualization Canvas -->
+    <canvas id="hyperav-canvas"></canvas>
+    
+    <!-- Magazine Content -->
+    <div class="magazine-content">
+        <!-- Hero Section -->
+        <section class="hero-section">
+            <div>
+                <h1 class="hero-title">VIB3CODE Enhanced</h1>
+                <p class="hero-subtitle">Digital Sovereignty Platform with HyperAV Lattice Visualization</p>
+                <p style="color: #888; font-size: 0.9rem;">Scroll to experience the interactive hypercube morphing</p>
+            </div>
+        </section>
+        
+        <!-- Content Sections -->
+        <section class="content-section">
+            <div class="content-box">
+                <h2>🔮 HyperAV Technology</h2>
+                <p>Experience the power of 4D lattice visualization as you scroll through our magazine. The background visualizer responds to your reading patterns, scroll velocity, and engagement metrics.</p>
+                <p>Watch as the grid density shifts based on your interaction speed, and the hypercube dimension morphs between 3D and 4D space as you navigate through different content sections.</p>
+            </div>
+        </section>
+        
+        <section class="content-section">
+            <div class="content-box">
+                <h2>👥 EMA Compliance</h2>
+                <p>Our platform maintains 100% Exoditical Moral Architecture compliance while delivering cutting-edge visualization technology. Every aspect of data processing respects user sovereignty.</p>
+                <p>The HyperAV system operates locally in your browser, ensuring complete privacy while providing unprecedented visual depth and interactivity.</p>
+            </div>
+        </section>
+        
+        <section class="content-section">
+            <div class="content-box">
+                <h2>🎵 Audio Integration</h2>
+                <p>The ParseHer podcast series and Gen-RL-MiLLz content integrate seamlessly with the lattice visualization, creating audio-reactive patterns that enhance the listening experience.</p>
+                <p>Frequency analysis drives the moiré patterns and RGB glitch effects, creating a synesthetic experience where sound becomes visible geometry.</p>
+            </div>
+        </section>
+        
+        <section class="content-section">
+            <div class="content-box">
+                <h2>🤖 Agentic Development</h2>
+                <p>This platform was developed using advanced agentic collaboration between Claude Code and Jules, demonstrating the future of human-AI development partnerships.</p>
+                <p>The HyperAV visualization system represents a breakthrough in real-time 4D mathematics, bringing polytopal geometry to web-based magazine experiences.</p>
+            </div>
+        </section>
+    </div>
+    
+    <!-- HyperAV Controls -->
+    <div class="hyperav-controls">
+        <div class="controls-title">🔮 HyperAV Controls</div>
+        
+        <div class="control-group">
+            <label>Scroll Sensitivity</label>
+            <div class="control-row">
+                <input type="range" min="0" max="2" step="0.1" value="1.0" class="slider" id="scrollSensitivity">
+                <span class="value-display" id="scrollSensitivity-value">1.0</span>
+            </div>
+        </div>
+        
+        <div class="control-group">
+            <label>Grid Density</label>
+            <div class="control-row">
+                <input type="range" min="5" max="25" step="0.5" value="12" class="slider" id="gridDensity">
+                <span class="value-display" id="gridDensity-value">12</span>
+            </div>
+        </div>
+        
+        <div class="control-group">
+            <label>4D Dimension</label>
+            <div class="control-row">
+                <input type="range" min="3" max="4" step="0.01" value="3.5" class="slider" id="dimension">
+                <span class="value-display" id="dimension-value">3.5</span>
+            </div>
+        </div>
+        
+        <div class="control-group">
+            <label>RGB Glitch</label>
+            <div class="control-row">
+                <input type="range" min="0" max="1" step="0.01" value="0.3" class="slider" id="glitchIntensity">
+                <span class="value-display" id="glitchIntensity-value">0.3</span>
+            </div>
+        </div>
+        
+        <div class="control-group">
+            <label>Morph Factor</label>
+            <div class="control-row">
+                <input type="range" min="0" max="1" step="0.01" value="0.5" class="slider" id="morphFactor">
+                <span class="value-display" id="morphFactor-value">0.5</span>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Magazine Metrics -->
+    <div class="magazine-metrics">
+        <div class="metric">
+            <span class="metric-label">Scroll Velocity:</span>
+            <span class="metric-value" id="scrollVelocity">0</span>
+        </div>
+        <div class="metric">
+            <span class="metric-label">Reading Pace:</span>
+            <span class="metric-value" id="readingPace">Normal</span>
+        </div>
+        <div class="metric">
+            <span class="metric-label">Section:</span>
+            <span class="metric-value" id="currentSection">Hero</span>
+        </div>
+        <div class="metric">
+            <span class="metric-label">Engagement:</span>
+            <span class="metric-value" id="engagementLevel">Medium</span>
+        </div>
+        <div class="metric">
+            <span class="metric-label">FPS:</span>
+            <span class="metric-value" id="fpsDisplay">60</span>
+        </div>
+    </div>
+    
+    <!-- Scroll Progress Indicator -->
+    <div class="scroll-indicator">
+        <div class="scroll-progress" id="scrollProgress"></div>
+    </div>
+
+    <script>
+        console.log('🔮 VIB3CODE Enhanced - HyperAV Integration Loading...');
+        
+        // Magazine interaction tracking (your scroll-based system)
+        class VIB3MagazineTracker {
+            constructor() {
+                this.metrics = {
+                    scrollVelocity: 0,
+                    readingPace: 'Normal',
+                    currentSection: 'Hero',
+                    engagementLevel: 'Medium',
+                    timeOnSection: 0,
+                    lastScrollTime: Date.now(),
+                    lastScrollY: 0
+                };
+                
+                this.initTracking();
+            }
+            
+            initTracking() {
+                let lastScrollY = window.scrollY;
+                let lastTime = Date.now();
+                
+                window.addEventListener('scroll', () => {
+                    const currentTime = Date.now();
+                    const currentY = window.scrollY;
+                    
+                    // Calculate scroll velocity
+                    const deltaY = Math.abs(currentY - lastScrollY);
+                    const deltaTime = currentTime - lastTime;
+                    
+                    if (deltaTime > 0) {
+                        this.metrics.scrollVelocity = Math.min(deltaY / deltaTime * 100, 100);
+                    }
+                    
+                    // Update reading pace based on scroll velocity
+                    if (this.metrics.scrollVelocity < 5) {
+                        this.metrics.readingPace = 'Slow';
+                    } else if (this.metrics.scrollVelocity < 15) {
+                        this.metrics.readingPace = 'Normal';
+                    } else {
+                        this.metrics.readingPace = 'Fast';
+                    }
+                    
+                    // Determine current section
+                    const scrollPercent = currentY / (document.body.scrollHeight - window.innerHeight);
+                    if (scrollPercent < 0.25) {
+                        this.metrics.currentSection = 'Hero';
+                    } else if (scrollPercent < 0.5) {
+                        this.metrics.currentSection = 'HyperAV';
+                    } else if (scrollPercent < 0.75) {
+                        this.metrics.currentSection = 'EMA';
+                    } else {
+                        this.metrics.currentSection = 'Agentic';
+                    }
+                    
+                    // Update engagement level
+                    if (this.metrics.scrollVelocity < 3) {
+                        this.metrics.engagementLevel = 'High'; // Slow reading = engaged
+                    } else if (this.metrics.scrollVelocity < 20) {
+                        this.metrics.engagementLevel = 'Medium';
+                    } else {
+                        this.metrics.engagementLevel = 'Low'; // Fast scrolling = skimming
+                    }
+                    
+                    lastScrollY = currentY;
+                    lastTime = currentTime;
+                    
+                    // Update UI
+                    this.updateUI();
+                });
+                
+                // Update scroll progress
+                window.addEventListener('scroll', () => {
+                    const scrollPercent = window.scrollY / (document.body.scrollHeight - window.innerHeight);
+                    document.getElementById('scrollProgress').style.height = (scrollPercent * 100) + '%';
+                });
+            }
+            
+            updateUI() {
+                document.getElementById('scrollVelocity').textContent = this.metrics.scrollVelocity.toFixed(1);
+                document.getElementById('readingPace').textContent = this.metrics.readingPace;
+                document.getElementById('currentSection').textContent = this.metrics.currentSection;
+                document.getElementById('engagementLevel').textContent = this.metrics.engagementLevel;
+            }
+            
+            getMetrics() {
+                return this.metrics;
+            }
+        }
+        
+        // Your HyperAV Lattice System (adapted from your code)
+        class HyperAVLatticeVisualization {
+            constructor(canvas) {
+                this.canvas = canvas;
+                this.gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+                
+                if (!this.gl) {
+                    console.error('WebGL not supported');
+                    return;
+                }
+                
+                // Your original parameters
+                this.startTime = Date.now();
+                this.mouseX = 0.5;
+                this.mouseY = 0.5;
+                this.morphFactor = 0.5;
+                this.glitchIntensity = 0.3;
+                this.rotationSpeed = 0.5;
+                this.dimension = 3.5;
+                this.gridDensity = 12.0;
+                this.scrollSensitivity = 1.0;
+                
+                // Magazine integration
+                this.magazineTracker = null;
+                
+                // Performance tracking
+                this.fps = 60;
+                this.frameCount = 0;
+                this.lastFpsTime = Date.now();
+                
+                this.initShaders();
+                this.initBuffers();
+                this.setupInteraction();
+                this.resize();
+                this.animate();
+                
+                console.log('✅ HyperAV Lattice Visualization initialized');
+            }
+            
+            setMagazineTracker(tracker) {
+                this.magazineTracker = tracker;
+            }
+            
+            initShaders() {
+                // Your exact vertex shader
+                const vertexShaderSource = `
+                  attribute vec2 a_position;
+                  void main() {
+                    gl_Position = vec4(a_position, 0.0, 1.0);
+                  }
+                `;
+                
+                // Your exact fragment shader (condensed for integration)
+                const fragmentShaderSource = `
+                  precision highp float;
+                  
+                  uniform vec2 u_resolution;
+                  uniform float u_time;
+                  uniform vec2 u_mouse;
+                  uniform float u_morphFactor;
+                  uniform float u_glitchIntensity;
+                  uniform float u_rotationSpeed;
+                  uniform float u_dimension;
+                  uniform float u_gridDensity;
+                  uniform float u_scrollVelocity;
+                  uniform float u_engagementFactor;
+                  
+                  mat4 rotateXW(float theta) {
+                    float c = cos(theta);
+                    float s = sin(theta);
+                    return mat4(c, 0, 0, -s, 0, 1, 0, 0, 0, 0, 1, 0, s, 0, 0, c);
+                  }
+                  
+                  mat4 rotateYW(float theta) {
+                    float c = cos(theta);
+                    float s = sin(theta);
+                    return mat4(1, 0, 0, 0, 0, c, 0, -s, 0, 0, 1, 0, 0, s, 0, c);
+                  }
+                  
+                  mat4 rotateZW(float theta) {
+                    float c = cos(theta);
+                    float s = sin(theta);
+                    return mat4(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, c, -s, 0, 0, s, c);
+                  }
+                  
+                  vec3 project4Dto3D(vec4 p) {
+                    float w = 2.0 / (2.0 + p.w);
+                    return vec3(p.x * w, p.y * w, p.z * w);
+                  }
+                  
+                  float latticeEdges(vec3 p, float gridSize, float lineWidth) {
+                    vec3 grid = fract(p * gridSize);
+                    vec3 edges = 1.0 - smoothstep(0.0, lineWidth, abs(grid - 0.5));
+                    return max(max(edges.x, edges.y), edges.z);
+                  }
+                  
+                  float latticeVertices(vec3 p, float gridSize, float vertexSize) {
+                    vec3 grid = fract(p * gridSize);
+                    vec3 distToVertex = min(grid, 1.0 - grid);
+                    float minDist = min(min(distToVertex.x, distToVertex.y), distToVertex.z);
+                    return 1.0 - smoothstep(0.0, vertexSize, minDist);
+                  }
+                  
+                  float hypercubeLattice(vec3 p, float morphFactor, float gridSize) {
+                    float edges = latticeEdges(p, gridSize, 0.03);
+                    float vertices = latticeVertices(p, gridSize, 0.05);
+                    
+                    float timeFactor = u_time * 0.2 * u_rotationSpeed;
+                    
+                    // Magazine interaction: scroll affects distortion
+                    float scrollInfluence = u_scrollVelocity * 0.01;
+                    float engagementInfluence = u_engagementFactor;
+                    
+                    vec3 distortedP = p;
+                    distortedP.x += sin(p.z * 2.0 + timeFactor) * morphFactor * 0.2 * (1.0 + scrollInfluence);
+                    distortedP.y += cos(p.x * 2.0 + timeFactor) * morphFactor * 0.2 * (1.0 + scrollInfluence);
+                    distortedP.z += sin(p.y * 2.0 + timeFactor) * morphFactor * 0.1 * engagementInfluence;
+                    
+                    if (u_dimension > 3.0) {
+                      float w = sin(length(p) * 3.0 + u_time * 0.3) * (u_dimension - 3.0);
+                      vec4 p4d = vec4(distortedP, w);
+                      
+                      p4d = rotateXW(timeFactor * 0.31) * p4d;
+                      p4d = rotateYW(timeFactor * 0.27) * p4d;
+                      p4d = rotateZW(timeFactor * 0.23) * p4d;
+                      
+                      distortedP = project4Dto3D(p4d);
+                    }
+                    
+                    float distortedEdges = latticeEdges(distortedP, gridSize, 0.03);
+                    float distortedVertices = latticeVertices(distortedP, gridSize, 0.05);
+                    
+                    edges = mix(edges, distortedEdges, morphFactor);
+                    vertices = mix(vertices, distortedVertices, morphFactor);
+                    
+                    return max(edges, vertices);
+                  }
+                  
+                  void main() {
+                    vec2 uv = gl_FragCoord.xy / u_resolution.xy;
+                    float aspectRatio = u_resolution.x / u_resolution.y;
+                    uv.x *= aspectRatio;
+                    
+                    vec2 center = vec2(u_mouse.x * aspectRatio, u_mouse.y);
+                    vec3 p = vec3(uv - center, 0.0);
+                    
+                    float timeRotation = u_time * 0.2 * u_rotationSpeed;
+                    mat2 rotation = mat2(cos(timeRotation), -sin(timeRotation), sin(timeRotation), cos(timeRotation));
+                    p.xy = rotation * p.xy;
+                    p.z = sin(u_time * 0.1) * 0.5;
+                    
+                    // Magazine-responsive grid density
+                    float dynamicGridDensity = u_gridDensity * (1.0 + u_scrollVelocity * 0.01);
+                    float lattice = hypercubeLattice(p, u_morphFactor, dynamicGridDensity);
+                    
+                    // RGB splitting with magazine responsiveness
+                    float glitchAmount = u_glitchIntensity * (0.1 + 0.1 * sin(u_time * 5.0)) * (1.0 + u_scrollVelocity * 0.02);
+                    
+                    vec2 rOffset = vec2(glitchAmount, glitchAmount * 0.5);
+                    vec2 gOffset = vec2(-glitchAmount * 0.3, glitchAmount * 0.2);
+                    vec2 bOffset = vec2(glitchAmount * 0.1, -glitchAmount * 0.4);
+                    
+                    float r = hypercubeLattice(vec3(p.xy + rOffset, p.z), u_morphFactor, dynamicGridDensity);
+                    float g = hypercubeLattice(vec3(p.xy + gOffset, p.z), u_morphFactor, dynamicGridDensity);
+                    float b = hypercubeLattice(vec3(p.xy + bOffset, p.z), u_morphFactor, dynamicGridDensity);
+                    
+                    // Moiré effects
+                    float moireGrid1 = hypercubeLattice(p, u_morphFactor, dynamicGridDensity * 1.01);
+                    float moireGrid2 = hypercubeLattice(p, u_morphFactor, dynamicGridDensity * 0.99);
+                    float moire = abs(moireGrid1 - moireGrid2) * 0.5;
+                    
+                    r = mix(r, moire, 0.3);
+                    g = mix(g, moire, 0.4);
+                    b = mix(b, moire, 0.5);
+                    
+                    // VIB3CODE color scheme
+                    vec3 baseColor = vec3(0.05, 0.1, 0.2);
+                    vec3 latticeColor = vec3(1.0, 0.8, 1.0) * u_engagementFactor;
+                    
+                    vec3 color = mix(baseColor, latticeColor, vec3(r, g, b));
+                    color += vec3(0.1, 0.2, 0.4) * (0.5 + 0.5 * sin(u_time * 0.5));
+                    
+                    float vignette = 1.0 - smoothstep(0.4, 1.4, length(uv - vec2(center.x, center.y)));
+                    color *= vignette;
+                    
+                    gl_FragColor = vec4(color, 0.9);
+                  }
+                `;
+                
+                const vertexShader = this.createShader(this.gl.VERTEX_SHADER, vertexShaderSource);
+                const fragmentShader = this.createShader(this.gl.FRAGMENT_SHADER, fragmentShaderSource);
+                this.program = this.createProgram(vertexShader, fragmentShader);
+                
+                // Get uniform locations
+                this.resolutionUniformLocation = this.gl.getUniformLocation(this.program, 'u_resolution');
+                this.timeUniformLocation = this.gl.getUniformLocation(this.program, 'u_time');
+                this.mouseUniformLocation = this.gl.getUniformLocation(this.program, 'u_mouse');
+                this.morphFactorUniformLocation = this.gl.getUniformLocation(this.program, 'u_morphFactor');
+                this.glitchIntensityUniformLocation = this.gl.getUniformLocation(this.program, 'u_glitchIntensity');
+                this.rotationSpeedUniformLocation = this.gl.getUniformLocation(this.program, 'u_rotationSpeed');
+                this.dimensionUniformLocation = this.gl.getUniformLocation(this.program, 'u_dimension');
+                this.gridDensityUniformLocation = this.gl.getUniformLocation(this.program, 'u_gridDensity');
+                this.scrollVelocityUniformLocation = this.gl.getUniformLocation(this.program, 'u_scrollVelocity');
+                this.engagementFactorUniformLocation = this.gl.getUniformLocation(this.program, 'u_engagementFactor');
+                this.positionAttributeLocation = this.gl.getAttribLocation(this.program, 'a_position');
+            }
+            
+            createShader(type, source) {
+                const shader = this.gl.createShader(type);
+                this.gl.shaderSource(shader, source);
+                this.gl.compileShader(shader);
+                
+                if (!this.gl.getShaderParameter(shader, this.gl.COMPILE_STATUS)) {
+                    console.error("Shader compilation error:", this.gl.getShaderInfoLog(shader));
+                    this.gl.deleteShader(shader);
+                    return null;
+                }
+                return shader;
+            }
+            
+            createProgram(vertexShader, fragmentShader) {
+                const program = this.gl.createProgram();
+                this.gl.attachShader(program, vertexShader);
+                this.gl.attachShader(program, fragmentShader);
+                this.gl.linkProgram(program);
+                
+                if (!this.gl.getProgramParameter(program, this.gl.LINK_STATUS)) {
+                    console.error("Program linking error:", this.gl.getProgramInfoLog(program));
+                    this.gl.deleteProgram(program);
+                    return null;
+                }
+                return program;
+            }
+            
+            initBuffers() {
+                this.positionBuffer = this.gl.createBuffer();
+                this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.positionBuffer);
+                this.gl.bufferData(
+                    this.gl.ARRAY_BUFFER,
+                    new Float32Array([-1.0, -1.0, 1.0, -1.0, -1.0, 1.0, 1.0, 1.0]),
+                    this.gl.STATIC_DRAW
+                );
+            }
+            
+            setupInteraction() {
+                // Mouse tracking
+                this.canvas.addEventListener('mousemove', (event) => {
+                    const rect = this.canvas.getBoundingClientRect();
+                    this.mouseX = (event.clientX - rect.left) / rect.width;
+                    this.mouseY = 1.0 - (event.clientY - rect.top) / rect.height;
+                });
+                
+                // Control sliders
+                document.getElementById('scrollSensitivity')?.addEventListener('input', (e) => {
+                    this.scrollSensitivity = parseFloat(e.target.value);
+                });
+                
+                document.getElementById('gridDensity')?.addEventListener('input', (e) => {
+                    this.gridDensity = parseFloat(e.target.value);
+                });
+                
+                document.getElementById('dimension')?.addEventListener('input', (e) => {
+                    this.dimension = parseFloat(e.target.value);
+                });
+                
+                document.getElementById('glitchIntensity')?.addEventListener('input', (e) => {
+                    this.glitchIntensity = parseFloat(e.target.value);
+                });
+                
+                document.getElementById('morphFactor')?.addEventListener('input', (e) => {
+                    this.morphFactor = parseFloat(e.target.value);
+                });
+                
+                // Update value displays
+                document.querySelectorAll('.slider').forEach(slider => {
+                    const valueDisplay = document.getElementById(`${slider.id}-value`);
+                    slider.addEventListener('input', () => {
+                        valueDisplay.textContent = parseFloat(slider.value).toFixed(slider.step < 1 ? 2 : 1);
+                    });
+                    valueDisplay.textContent = parseFloat(slider.value).toFixed(slider.step < 1 ? 2 : 1);
+                });
+                
+                window.addEventListener('resize', () => this.resize());
+            }
+            
+            resize() {
+                const displayWidth = this.canvas.clientWidth;
+                const displayHeight = this.canvas.clientHeight;
+                
+                if (this.canvas.width !== displayWidth || this.canvas.height !== displayHeight) {
+                    this.canvas.width = displayWidth;
+                    this.canvas.height = displayHeight;
+                    this.gl.viewport(0, 0, this.canvas.width, this.canvas.height);
+                }
+            }
+            
+            render(time) {
+                // Calculate FPS
+                this.frameCount++;
+                if (time - this.lastFpsTime > 1000) {
+                    this.fps = this.frameCount;
+                    this.frameCount = 0;
+                    this.lastFpsTime = time;
+                    document.getElementById('fpsDisplay').textContent = this.fps;
+                }
+                
+                // Get magazine metrics
+                let scrollVelocity = 0;
+                let engagementFactor = 0.5;
+                
+                if (this.magazineTracker) {
+                    const metrics = this.magazineTracker.getMetrics();
+                    scrollVelocity = metrics.scrollVelocity * this.scrollSensitivity;
+                    
+                    // Convert engagement level to factor
+                    switch (metrics.engagementLevel) {
+                        case 'High': engagementFactor = 1.0; break;
+                        case 'Medium': engagementFactor = 0.6; break;
+                        case 'Low': engagementFactor = 0.3; break;
+                    }
+                }
+                
+                this.gl.clearColor(0.0, 0.0, 0.0, 1.0);
+                this.gl.clear(this.gl.COLOR_BUFFER_BIT);
+                this.gl.useProgram(this.program);
+                
+                // Setup vertex attributes
+                this.gl.enableVertexAttribArray(this.positionAttributeLocation);
+                this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.positionBuffer);
+                this.gl.vertexAttribPointer(this.positionAttributeLocation, 2, this.gl.FLOAT, false, 0, 0);
+                
+                // Set uniforms
+                this.gl.uniform2f(this.resolutionUniformLocation, this.canvas.width, this.canvas.height);
+                this.gl.uniform1f(this.timeUniformLocation, (Date.now() - this.startTime) / 1000);
+                this.gl.uniform2f(this.mouseUniformLocation, this.mouseX, this.mouseY);
+                this.gl.uniform1f(this.morphFactorUniformLocation, this.morphFactor);
+                this.gl.uniform1f(this.glitchIntensityUniformLocation, this.glitchIntensity);
+                this.gl.uniform1f(this.rotationSpeedUniformLocation, this.rotationSpeed);
+                this.gl.uniform1f(this.dimensionUniformLocation, this.dimension);
+                this.gl.uniform1f(this.gridDensityUniformLocation, this.gridDensity);
+                this.gl.uniform1f(this.scrollVelocityUniformLocation, scrollVelocity);
+                this.gl.uniform1f(this.engagementFactorUniformLocation, engagementFactor);
+                
+                this.gl.drawArrays(this.gl.TRIANGLE_STRIP, 0, 4);
+            }
+            
+            animate() {
+                this.render(Date.now());
+                requestAnimationFrame(() => this.animate());
+            }
+        }
+        
+        // Initialize the integrated system
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('🚀 Initializing VIB3CODE Enhanced with HyperAV Integration...');
+            
+            // Initialize magazine tracking
+            const magazineTracker = new VIB3MagazineTracker();
+            
+            // Initialize HyperAV visualization
+            const canvas = document.getElementById('hyperav-canvas');
+            if (canvas) {
+                const hyperav = new HyperAVLatticeVisualization(canvas);
+                hyperav.setMagazineTracker(magazineTracker);
+                
+                console.log('✅ HyperAV Integration Complete!');
+                console.log('🎯 Scroll through the page to see the lattice respond to your reading patterns');
+                console.log('🔮 Use the controls to adjust the visualization parameters');
+            }
+        });
+    </script>
+</body>
+</html>

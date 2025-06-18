@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Simple Test</title>
+    <style>
+        body { background: #000; color: #0f0; font-family: monospace; padding: 50px; }
+        .box { width: 100px; height: 100px; background: #0f0; margin: 20px; animation: spin 2s linear infinite; }
+        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+    <h1>✅ SERVER IS WORKING!</h1>
+    <p>If you can see this spinning green box, the server is running correctly:</p>
+    <div class="box"></div>
+    <p>Time: <span id="time"></span></p>
+    <script>
+        setInterval(() => {
+            document.getElementById('time').textContent = new Date().toLocaleTimeString();
+        }, 1000);
+        console.log('✅ JavaScript is working!');
+    </script>
+</body>
+</html>

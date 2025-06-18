@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VIB3CODE Enhanced - Working 4D Demo</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔮</text></svg>">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            background: #000;
+            color: #fff;
+            font-family: 'Courier New', monospace;
+            overflow: hidden;
+        }
+        
+        #canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+        
+        .title {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 3rem;
+            font-weight: bold;
+            background: linear-gradient(45deg, #00ff88, #00ccff, #ff00aa);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-align: center;
+            z-index: 10;
+        }
+        
+        .controls {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 10px;
+            z-index: 10;
+        }
+        
+        button {
+            padding: 10px 20px;
+            background: rgba(0, 255, 136, 0.2);
+            border: 1px solid #00ff88;
+            color: #00ff88;
+            border-radius: 5px;
+            cursor: pointer;
+            font-family: inherit;
+            transition: all 0.3s;
+        }
+        
+        button:hover {
+            background: rgba(0, 255, 136, 0.3);
+            transform: scale(1.05);
+        }
+        
+        button.active {
+            background: rgba(0, 255, 136, 0.4);
+            box-shadow: 0 0 10px #00ff88;
+        }
+        
+        .info {
+            position: fixed;
+            top: 100px;
+            right: 20px;
+            background: rgba(0, 20, 40, 0.8);
+            border: 1px solid #00ff88;
+            border-radius: 10px;
+            padding: 15px;
+            font-size: 12px;
+            z-index: 10;
+        }
+        
+        .metric {
+            margin: 5px 0;
+            display: flex;
+            justify-content: space-between;
+            min-width: 150px;
+        }
+        
+        .metric-value {
+            color: #00ccff;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <h1 class="title">VIB3CODE 4D</h1>
+    
+    <canvas id="canvas"></canvas>
+    
+    <div class="info">
+        <div class="metric">
+            <span>Mode:</span>
+            <span class="metric-value" id="mode">Tesseract</span>
+        </div>
+        <div class="metric">
+            <span>FPS:</span>
+            <span class="metric-value" id="fps">60</span>
+        </div>
+        <div class="metric">
+            <span>Points:</span>
+            <span class="metric-value" id="points">16</span>
+        </div>
+        <div class="metric">
+            <span>Rotation:</span>
+            <span class="metric-value" id="rotation">XY-ZW</span>
+        </div>
+    </div>
+    
+    <div class="controls">
+        <button class="active" onclick="setMode('tesseract')">Tesseract</button>
+        <button onclick="setMode('sphere')">Hypersphere</button>
+        <button onclick="setMode('torus')">4D Torus</button>
+        <button onclick="setMode('klein')">Klein Bottle</button>
+        <button onclick="setMode('waves')">Wave Function</button>
+    </div>
+
+    <script>
+        // Canvas setup
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        
+        // State
+        let mode = 'tesseract';
+        let time = 0;
+        let fps = 60;
+        let lastTime = performance.now();
+        let frameCount = 0;
+        let fpsTime = 0;
+        
+        // 4D points storage
+        let points4D = [];
+        let edges = [];
+        
+        // Resize canvas
+        function resize() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        resize();
+        window.addEventListener('resize', resize);
+        
+        // 4D to 3D projection
+        function project4Dto3D(x, y, z, w) {
+            const distance = 2;
+            const wFactor = 1 / (distance - w);
+            return {
+                x: x * wFactor,
+                y: y * wFactor,
+                z: z * wFactor
+            };
+        }
+        
+        // 3D to 2D projection
+        function project3Dto2D(x, y, z) {
+            const distance = 5;
+            const scale = 200;
+            const factor = scale / (distance - z);
+            return {
+                x: x * factor + canvas.width / 2,
+                y: y * factor + canvas.height / 2
+            };
+        }
+        
+        // 4D rotation matrices
+        function rotateXY(point, angle) {
+            const cos = Math.cos(angle);
+            const sin = Math.sin(angle);
+            return {
+                x: point.x * cos - point.y * sin,
+                y: point.x * sin + point.y * cos,
+                z: point.z,
+                w: point.w
+            };
+        }
+        
+        function rotateZW(point, angle) {
+            const cos = Math.cos(angle);
+            const sin = Math.sin(angle);
+            return {
+                x: point.x,
+                y: point.y,
+                z: point.z * cos - point.w * sin,
+                w: point.z * sin + point.w * cos
+            };
+        }
+        
+        function rotateXZ(point, angle) {
+            const cos = Math.cos(angle);
+            const sin = Math.sin(angle);
+            return {
+                x: point.x * cos - point.z * sin,
+                y: point.y,
+                z: point.x * sin + point.z * cos,
+                w: point.w
+            };
+        }
+        
+        function rotateXW(point, angle) {
+            const cos = Math.cos(angle);
+            const sin = Math.sin(angle);
+            return {
+                x: point.x * cos - point.w * sin,
+                y: point.y,
+                z: point.z,
+                w: point.x * sin + point.w * cos
+            };
+        }
+        
+        // Generate 4D shapes
+        function generateTesseract() {
+            points4D = [];
+            edges = [];
+            
+            // Generate 16 vertices of a tesseract
+            for (let i = 0; i < 16; i++) {
+                points4D.push({
+                    x: (i & 1) ? 1 : -1,
+                    y: (i & 2) ? 1 : -1,
+                    z: (i & 4) ? 1 : -1,
+                    w: (i & 8) ? 1 : -1
+                });
+            }
+            
+            // Generate edges
+            for (let i = 0; i < 16; i++) {
+                for (let j = i + 1; j < 16; j++) {
+                    let diff = 0;
+                    if ((i & 1) !== (j & 1)) diff++;
+                    if ((i & 2) !== (j & 2)) diff++;
+                    if ((i & 4) !== (j & 4)) diff++;
+                    if ((i & 8) !== (j & 8)) diff++;
+                    
+                    if (diff === 1) {
+                        edges.push([i, j]);
+                    }
+                }
+            }
+        }
+        
+        function generateHypersphere() {
+            points4D = [];
+            edges = [];
+            
+            // Generate points on a 4D sphere
+            const n = 30;
+            for (let i = 0; i < n; i++) {
+                const theta = (i / n) * 2 * Math.PI;
+                for (let j = 0; j < n; j++) {
+                    const phi = (j / n) * Math.PI;
+                    const psi = Math.sin(time) * Math.PI;
+                    
+                    points4D.push({
+                        x: Math.cos(theta) * Math.sin(phi) * Math.sin(psi),
+                        y: Math.sin(theta) * Math.sin(phi) * Math.sin(psi),
+                        z: Math.cos(phi) * Math.sin(psi),
+                        w: Math.cos(psi)
+                    });
+                }
+            }
+        }
+        
+        function generate4DTorus() {
+            points4D = [];
+            edges = [];
+            
+            const n = 20;
+            for (let i = 0; i < n; i++) {
+                const u = (i / n) * 2 * Math.PI;
+                for (let j = 0; j < n; j++) {
+                    const v = (j / n) * 2 * Math.PI;
+                    
+                    points4D.push({
+                        x: Math.cos(u) * (2 + Math.cos(v)),
+                        y: Math.sin(u) * (2 + Math.cos(v)),
+                        z: Math.sin(v) * Math.cos(time),
+                        w: Math.sin(v) * Math.sin(time)
+                    });
+                }
+            }
+        }
+        
+        function generateKleinBottle() {
+            points4D = [];
+            edges = [];
+            
+            const n = 30;
+            for (let i = 0; i < n; i++) {
+                const u = (i / n) * 2 * Math.PI;
+                for (let j = 0; j < n; j++) {
+                    const v = (j / n) * 2 * Math.PI;
+                    
+                    const r = 2 - Math.cos(u);
+                    points4D.push({
+                        x: Math.sin(u) * r * Math.cos(v),
+                        y: Math.sin(u) * r * Math.sin(v),
+                        z: Math.cos(u) * r * 0.5,
+                        w: Math.sin(u * 2) * 0.5
+                    });
+                }
+            }
+        }
+        
+        function generateWaveFunction() {
+            points4D = [];
+            edges = [];
+            
+            const n = 40;
+            for (let i = 0; i < n; i++) {
+                for (let j = 0; j < n; j++) {
+                    const x = (i - n/2) / 10;
+                    const y = (j - n/2) / 10;
+                    const r = Math.sqrt(x*x + y*y);
+                    const z = Math.sin(r * 3 - time * 2) * Math.exp(-r * 0.5);
+                    const w = Math.cos(r * 2 + time) * 0.5;
+                    
+                    points4D.push({ x, y, z, w });
+                }
+            }
+        }
+        
+        // Set visualization mode
+        function setMode(newMode) {
+            mode = newMode;
+            document.getElementById('mode').textContent = 
+                newMode.charAt(0).toUpperCase() + newMode.slice(1);
+            
+            // Update button states
+            document.querySelectorAll('button').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            // Generate new shape
+            switch (mode) {
+                case 'tesseract':
+                    generateTesseract();
+                    break;
+                case 'sphere':
+                    generateHypersphere();
+                    break;
+                case 'torus':
+                    generate4DTorus();
+                    break;
+                case 'klein':
+                    generateKleinBottle();
+                    break;
+                case 'waves':
+                    generateWaveFunction();
+                    break;
+            }
+        }
+        
+        // Animation loop
+        function animate(currentTime) {
+            // Calculate FPS
+            frameCount++;
+            if (currentTime - fpsTime > 1000) {
+                fps = frameCount;
+                frameCount = 0;
+                fpsTime = currentTime;
+                document.getElementById('fps').textContent = fps;
+            }
+            
+            // Update time
+            const deltaTime = (currentTime - lastTime) / 1000;
+            lastTime = currentTime;
+            time += deltaTime;
+            
+            // Clear canvas
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.1)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // Update shape for animated modes
+            if (mode === 'sphere' || mode === 'torus' || mode === 'waves') {
+                setMode(mode);
+            }
+            
+            // Rotate and project points
+            const projectedPoints = [];
+            
+            for (let point of points4D) {
+                // Apply 4D rotations
+                let rotated = rotateXY(point, time * 0.5);
+                rotated = rotateZW(rotated, time * 0.7);
+                rotated = rotateXZ(rotated, time * 0.3);
+                
+                // Project 4D to 3D to 2D
+                const point3D = project4Dto3D(rotated.x, rotated.y, rotated.z, rotated.w);
+                const point2D = project3Dto2D(point3D.x, point3D.y, point3D.z);
+                
+                projectedPoints.push({
+                    ...point2D,
+                    depth: point3D.z,
+                    w: rotated.w
+                });
+            }
+            
+            // Draw edges for tesseract
+            if (mode === 'tesseract' && edges.length > 0) {
+                ctx.strokeStyle = '#00ff88';
+                ctx.lineWidth = 2;
+                
+                for (let edge of edges) {
+                    const p1 = projectedPoints[edge[0]];
+                    const p2 = projectedPoints[edge[1]];
+                    
+                    if (p1 && p2) {
+                        ctx.beginPath();
+                        ctx.moveTo(p1.x, p1.y);
+                        ctx.lineTo(p2.x, p2.y);
+                        
+                        // Color based on w coordinate
+                        const avgW = (projectedPoints[edge[0]].w + projectedPoints[edge[1]].w) / 2;
+                        const hue = (avgW + 1) * 180;
+                        ctx.strokeStyle = `hsl(${hue}, 100%, 50%)`;
+                        ctx.globalAlpha = 0.8 + avgW * 0.2;
+                        ctx.stroke();
+                    }
+                }
+            }
+            
+            // Draw points
+            for (let i = 0; i < projectedPoints.length; i++) {
+                const point = projectedPoints[i];
+                
+                if (point) {
+                    // Color based on 4D position
+                    const hue = (point.w + 1) * 180 + time * 30;
+                    ctx.fillStyle = `hsl(${hue}, 100%, 50%)`;
+                    
+                    // Size based on depth
+                    const size = Math.max(1, 5 - point.depth);
+                    
+                    ctx.beginPath();
+                    ctx.arc(point.x, point.y, size, 0, Math.PI * 2);
+                    ctx.globalAlpha = 0.8 + point.w * 0.2;
+                    ctx.fill();
+                }
+            }
+            
+            // Update info
+            document.getElementById('points').textContent = points4D.length;
+            document.getElementById('rotation').textContent = 
+                `XY:${(time * 0.5 % (Math.PI * 2)).toFixed(1)} ZW:${(time * 0.7 % (Math.PI * 2)).toFixed(1)}`;
+            
+            requestAnimationFrame(animate);
+        }
+        
+        // Initialize
+        generateTesseract();
+        animate(performance.now());
+        
+        console.log('🔮 VIB3CODE 4D Visualization Active!');
+        console.log('🎯 Click the buttons to switch between different 4D shapes');
+        console.log('📊 Watch the real-time 4D rotation and projection');
+    </script>
+</body>
+</html>
